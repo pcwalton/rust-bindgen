@@ -1478,8 +1478,12 @@ impl CompInfo {
                     // Methods of template functions not only used to be inlined,
                     // but also instantiated, and we wouldn't be able to call
                     // them, so just bail out.
-                    if !ci.template_params.is_empty() {
-                        return CXChildVisit_Continue;
+                    let mut maybe_cursor = Some(cur);
+                    while let Some(cursor) = maybe_cursor {
+                        if cursor.is_template_specialization() {
+                            return CXChildVisit_Continue;
+                        }
+                        maybe_cursor = cursor.fallible_semantic_parent();
                     }
 
                     // NB: This gets us an owned `Function`, not a
